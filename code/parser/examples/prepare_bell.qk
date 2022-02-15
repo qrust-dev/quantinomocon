@@ -1,0 +1,9 @@
+extern h(q : qubit);
+extern cnot(c : qubit, t : qubit);
+extern rz(θ : number, q : qubit);
+extern m(q : qubit) -> bit;
+
+def qmain() {
+  h(#0);
+  cnot(#0, #1);
+}

@@ -1,0 +1,6 @@
+[book]
+authors = ["Cassandra Granade"]
+language = "en"
+multilingual = false
+src = "src"
+title = "The Quantinomocon"

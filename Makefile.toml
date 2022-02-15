@@ -1,0 +1,5 @@
+[tasks.book]
+install_crate = "mdbook"
+command = "mdbook"
+args = ["build"]
+cwd = "book"

@@ -1,0 +1,49 @@
+program = _{ SOI ~ (file_element)* ~ EOI }
+
+file_element = _{ (declaration | definition) }
+declaration = { Extern ~ prototype ~ Semicolon }
+definition = { Def ~ prototype ~ definition_body }
+prototype = { Ident ~ arg_list ~ (return_decl)? }
+arg_list = { OpeningParenthesis ~ (arg_decl ~ Comma?)* ~ ClosingParenthesis }
+arg_decl = { Ident ~ Colon ~ type_sig }
+return_decl = { RightArrow ~ type_sig }
+type_sig = _{ (number_type | qubit_type | bit_type) }
+number_type = { NumberKeyword }
+qubit_type = { QubitKeyword }
+bit_type = { BitKeyword }
+
+definition_body = { OpenCurly ~ (statement)* ~ CloseCurly }
+
+statement = { (expression) ~ Semicolon }
+
+expression = { primary_expr }
+primary_expr = { (parenthesis_expr | call_expr | Ident | literal) }
+literal = { (number_literal | qubit_literal) }
+number_literal = @{ Number }
+qubit_literal = @{ Pound ~ Integer }
+call_expr = { Ident ~ OpeningParenthesis ~ (expression ~ Comma?)* ~ ClosingParenthesis }
+parenthesis_expr = { OpeningParenthesis ~ expression ~ ClosingParenthesis }
+
+// Terminals
+RightArrow = _{ "->" }
+OpeningParenthesis = _{ "(" }
+ClosingParenthesis = _{ ")" }
+OpenCurly = _{ "{" }
+CloseCurly = _{ "}" }
+Colon = _{ ":" }
+Comma = _{ "," }
+Pound = _{ "#" }
+Semicolon = _{ ";" }
+
+Def = _{ "def" }
+Extern = _{ "extern" }
+BitKeyword = _{ "bit" }
+NumberKeyword = _{ "number" }
+QubitKeyword = _{ "qubit" }
+
+Integer = @{ ASCII_DIGIT* }
+Number = @{ ((ASCII_DIGIT* ~ "." ~ ASCII_DIGIT*) | ASCII_DIGIT+) }
+Ident = @{ XID_START ~ XID_CONTINUE* }
+
+WHITESPACE = _{ WHITE_SPACE }
+
