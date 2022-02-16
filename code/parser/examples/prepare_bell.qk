@@ -3,6 +3,10 @@ extern cnot(c : qubit, t : qubit);
 extern rz(θ : number, q : qubit);
 extern m(q : qubit) -> bit;
 
+extern print_n(n : number);
+extern print_b(b : bit);
+extern print_q(q : qubit);
+
 def do_weird_stuff() {
     var foo: bit = true;
     var result: bit = m(#2);
@@ -17,18 +21,23 @@ def do_weird_stuff() {
     y = 2.17;
 }
 
-def qmain_disabled() {
+def qmain() {
     var c: qubit = #0;
     var t: qubit = #1;
-    h(q);
+    h(c);
     cnot(c, t);
+    print_b(m(#0));
+    print_b(m(#1));
 }
 
 def f(x: number) {
+    print_n(x);
+    h(#0);
+    print_b(m(#0));
     return x;
 }
 
-def qmain() {
+def qmain_disabled() {
     var x: number = 3.14;
     var y: bit = false;
     var z: number = f(x);
