@@ -18,6 +18,9 @@ use ast::*;
 pub mod ast_builder;
 use ast_builder::*;
 
+pub mod interpreter;
+use interpreter::*;
+
 pub mod error;
 use crate::error::QKaledioscopeError;
 
@@ -38,6 +41,12 @@ fn main() -> miette::Result<()> {
     })?;
     let ast = parse(&source)?;
 
-    println!("Parsed into AST: {:?}", ast);
+    // println!("Parsed into AST: {:?}", ast);
+
+    // let table = FunctionTable::build(&source, &ast)?;
+    // println!("Built function table: {:?}", table);
+
+    ast.run(&source)?;
+
     Ok(())
 }

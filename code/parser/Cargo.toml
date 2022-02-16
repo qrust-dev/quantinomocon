@@ -11,3 +11,4 @@ miette = { version = "3.3.0", features = ["fancy"] }
 pest = "2.1.3"
 pest_derive = "2.1.0"
 thiserror = "1.0.30"
+quick-quantum-sim = { git = "https://github.com/swernli/quick-quantum-sim" }

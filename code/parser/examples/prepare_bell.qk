@@ -17,9 +17,19 @@ def do_weird_stuff() {
     y = 2.17;
 }
 
-def qmain() {
+def qmain_disabled() {
     var c: qubit = #0;
     var t: qubit = #1;
     h(q);
     cnot(c, t);
+}
+
+def f(x: number) {
+    return x;
+}
+
+def qmain() {
+    var x: number = 3.14;
+    var y: bit = false;
+    var z: number = f(x);
 }

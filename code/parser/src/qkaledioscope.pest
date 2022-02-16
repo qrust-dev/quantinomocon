@@ -16,10 +16,11 @@ definition_body = _{ OpenCurly ~ (statement)* ~ CloseCurly }
 
 statement = _{ 
     (
-        ((variable_declaration | assignment | call_expr  ) ~ Semicolon) |
+        ((variable_declaration | assignment | call_expr | return_stmt) ~ Semicolon) |
         if_stmt | while_stmt
     )
 }
+return_stmt = { ReturnKeyword ~ expression }
 if_stmt = { if_block ~ else_block? }
 if_block = { IfKeyword ~ expression ~ OpenCurly ~ (statement)* ~ CloseCurly }
 else_block = { ElseKeyword ~ OpenCurly ~ (statement*) ~ CloseCurly }
@@ -28,11 +29,11 @@ variable_declaration = { VarKeyword ~ Ident ~ Colon ~ type_sig ~ Equals ~ expres
 assignment = { Ident ~ Equals ~ expression }
 
 expression = _{ primary_expr }
-primary_expr = _{ (parenthesis_expr | call_expr | Ident | literal) }
+primary_expr = _{ (parenthesis_expr | call_expr | literal | Ident ) }
 literal = _{ (number_literal | qubit_literal | bit_literal) }
 number_literal = @{ Number }
 qubit_literal = @{ Pound ~ Integer }
-bit_literal = @{ (TrueKeyword | FalseKeyword) }
+bit_literal = _{ (TrueKeyword | FalseKeyword) }
 call_expr = { Ident ~ OpeningParenthesis ~ (expression ~ Comma?)* ~ ClosingParenthesis }
 parenthesis_expr = _{ OpeningParenthesis ~ expression ~ ClosingParenthesis }
 
@@ -59,6 +60,7 @@ QubitKeyword = _{ "qubit" }
 VarKeyword = _{ "var" }
 TrueKeyword = { "true" }
 FalseKeyword = { "false" }
+ReturnKeyword = _{ "return" }
 
 Integer = @{ ASCII_DIGIT* }
 Number = @{ ((ASCII_DIGIT* ~ "." ~ ASCII_DIGIT*) | ASCII_DIGIT+) }

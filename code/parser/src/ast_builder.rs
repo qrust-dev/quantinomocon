@@ -20,12 +20,12 @@ where
     fn try_parse(source: &str, pair: Pair<Rule>) -> Result<Located<Self>> {
         let span = pair.as_span();
         let raw = Self::try_parse_raw(source, pair)?;
-        Ok(Located(
-            raw,
-            Some(
+        Ok(Located {
+            value: raw,
+            location: Some(
                 (span.start(), span.end())
             ),
-        ))
+        })
     }
 
     fn try_parse_many<'a, I: Iterator<Item = Pair<'a, Rule>>>(
@@ -226,6 +226,11 @@ impl TryParse for Statement {
                     condition, body
                 })
             },
+            Rule::return_stmt => {
+                let mut inner = pair.into_inner();
+                let value = Expression::try_parse(source, inner.next().unwrap())?;
+                Ok(Statement::Return(value))
+            }
             _ => Err(wrong_rule_as_parse_error(
                 source,
                 "Expected a valid statement",

@@ -14,6 +14,15 @@ pub enum QKaledioscopeError {
         subject: Option<String>
     },
 
+
+    #[error(transparent)]
+    #[diagnostic()]
+    ParseIntError(#[from] std::num::ParseIntError),
+
+    #[error(transparent)]
+    #[diagnostic()]
+    ParseFloatError(#[from] std::num::ParseFloatError),
+
     #[error("Syntax error")]
     #[diagnostic()]
     ParseError {
@@ -26,14 +35,71 @@ pub enum QKaledioscopeError {
         causes: Vec<QKaledioscopeError>
     },
 
-    #[error(transparent)]
+    #[error("Duplicate name error")]
     #[diagnostic()]
-    ParseIntError(#[from] std::num::ParseIntError),
+    DuplicateNameError {
+        name: String,
 
-    #[error(transparent)]
+        #[source_code]
+        src: String,
+
+        #[label("...but {name} was already defined here.")]
+        // TODO: Change to sourcespan
+        old_span: (usize, usize),
+
+        #[label("Attempted to define {name} here...")]
+        // TODO: Change to sourcespan
+        new_span: (usize, usize),
+    },
+
+    #[error("No qmain function defined.")]
+    #[diagnostic(
+        help("Try adding `def qmain() {{ ... }}` to your program.")
+    )]
+    NoQMainError,
+
+    #[error("No definition for extern function found.")]
     #[diagnostic()]
-    ParseFloatError(#[from] std::num::ParseFloatError)
+    LinkingError {
+        name: String,
+
+        #[source_code]
+        src: String,
+
+        #[label("No definition found for this extern declaration.")]
+        // TODO: Change to sourcespan
+        span: (usize, usize)
+    },
+
+    #[error("Mismatched types: expected {expected}, but got {actual}.")]
+    #[diagnostic()]
+    TypeError {
+        expected: String,
+        actual: String,
+
+        #[source_code]
+        src: String,
+
+        #[label("Expected this expression to evaluate to {expected}...")]
+        expr_span: SourceSpan,
+
+        #[label("...because of this type declaration.")]
+        type_span: SourceSpan,
+    },
+
+    #[error("No variable {name} has been defined.")]
+    #[diagnostic()]
+    UndefinedVariableError {
+        name: String,
+
+        #[source_code]
+        src: String,
+
+        #[label("Referenced from here.")]
+        span: SourceSpan,
+    }
 }
+
 pub type Result<T> = std::result::Result<T, QKaledioscopeError>;
 
 pub(crate) fn wrong_rule_as_parse_error<S>(source: S, description: &str, span: Span, causes: Vec<QKaledioscopeError>) -> QKaledioscopeError

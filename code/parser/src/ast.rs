@@ -4,6 +4,7 @@ use crate::{
     parser::*, ast_builder::TryParse
 };
 use std::{str::FromStr, thread::LocalKey};
+use miette::{SourceSpan, SourceOffset};
 use pest::{iterators::Pair, Parser, Span};
 
 // NB: Located should not be used for structs that are atomic --- that is, that
@@ -11,13 +12,22 @@ use pest::{iterators::Pair, Parser, Span};
 //     have Identifiers as items should use Located to say where they got those
 //     Identifiers, however.
 #[derive(Debug)]
-pub struct Located<T: std::fmt::Debug>(pub T, pub Option<(usize, usize)>);
+pub struct Located<T: std::fmt::Debug> {
+    pub value: T,
+    pub location: Option<(usize, usize)>
+}
 impl<T> From<T> for Located<T> where T: std::fmt::Debug {
     fn from(value: T) -> Self {
-        Located(value, None)
+        Located { value, location: None }
     }
 }
-
+impl<T> Located<T> where T: std::fmt::Debug {
+    pub fn as_sourcespan(&self) -> SourceSpan {
+        // TODO: Remove unwrap by making located not use an option.
+        let loc = self.location.unwrap();
+        (loc.0, loc.1 - loc.0).into()
+    }
+}
 #[derive(Debug)]
 pub struct Program(pub Vec<Located<FileElement>>);
 
@@ -48,7 +58,7 @@ pub enum Type {
     Bit,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct Identifier(pub String);
 
 #[derive(Debug)]
@@ -64,7 +74,8 @@ pub enum Statement {
     While {
         condition: Located<Expression>,
         body: Vec<Located<Statement>>,
-    }
+    },
+    Return(Located<Expression>),
 }
 
 
