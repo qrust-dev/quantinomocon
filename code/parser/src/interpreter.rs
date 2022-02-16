@@ -2,7 +2,7 @@ use std::{collections::HashMap, cell::RefCell};
 
 use qqs::{QuantumSim, sparsestate::SparseState, common_matrices};
 
-use crate::{ast::{Program, FileElement, Statement, Expression, Identifier, Located, Type}, error::{QKaledioscopeError, Result}, util::ResultIter};
+use crate::{ast::{Program, FileElement, Statement, Expression, Identifier, Located, Type}, error::{QKaledioscopeError, Result}};
 
 #[derive(Debug, Clone, Copy)]
 pub enum InterpreterValue {
@@ -80,7 +80,7 @@ impl Program {
         self.0.iter().fold(0, |acc, element| {
             std::cmp::max(acc, match &element.value {
                 FileElement::Declaration(_) => 0,
-                FileElement::Definition { prototype, body } => {
+                FileElement::Definition { prototype: _, body } => {
                     body.iter().fold(0, |acc, stmt| {
                         std::cmp::max(acc, match &stmt.value {
                             Statement::Assignment(_, expr) => expr.value.n_qubits_required(),
@@ -92,8 +92,7 @@ impl Program {
                             _ => 0
                         })
                     })
-                },
-                _ => 0
+                }
             })
         })
     }
@@ -207,7 +206,7 @@ impl FunctionTableEntry<'_> {
     // TODO: Add args here.
     pub fn run_in(&self, source: &str, table: &FunctionTable, args: Vec<InterpreterValue>) -> Result<Option<InterpreterValue>> {
         match self {
-            FunctionTableEntry::Builtin(mut f) =>
+            FunctionTableEntry::Builtin(f) =>
                 f(&args),
             FunctionTableEntry::Interpreted(file_element) => match &file_element.value {
                 // TODO: Try looking up extern.

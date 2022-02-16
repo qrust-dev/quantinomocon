@@ -10,21 +10,15 @@ use clap::{self, StructOpt};
 //     but not the other way around. 
 
 pub mod parser;
-use parser::*;
-
 pub mod ast;
-use ast::*;
-
 pub mod ast_builder;
-use ast_builder::*;
-
 pub mod interpreter;
-use interpreter::*;
-
 pub mod error;
+mod util;
+
+use crate::ast_builder::*;
 use crate::error::QKaledioscopeError;
 
-mod util;
 
 
 #[derive(clap::Parser, Debug)]
