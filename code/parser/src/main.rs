@@ -2,11 +2,21 @@
 extern crate pest_derive;
 
 use std::{fs, path::PathBuf};
-
 use clap::{self, StructOpt};
+
+// NB: The modules below are listed roughly in the order that's easiest to
+//     read and follow along with. Each module requires mostly only what's
+//     defined in previously modules; for example, `ast` depends on `parser`,
+//     but not the other way around. 
+
+pub mod parser;
+use parser::*;
 
 pub mod ast;
 use ast::*;
+
+pub mod ast_builder;
+use ast_builder::*;
 
 pub mod error;
 use crate::error::QKaledioscopeError;

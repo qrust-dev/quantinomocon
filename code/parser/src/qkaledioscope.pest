@@ -12,17 +12,29 @@ number_type = { NumberKeyword }
 qubit_type = { QubitKeyword }
 bit_type = { BitKeyword }
 
-definition_body = { OpenCurly ~ (statement)* ~ CloseCurly }
+definition_body = _{ OpenCurly ~ (statement)* ~ CloseCurly }
 
-statement = { (expression) ~ Semicolon }
+statement = _{ 
+    (
+        ((variable_declaration | assignment | call_expr  ) ~ Semicolon) |
+        if_stmt | while_stmt
+    )
+}
+if_stmt = { if_block ~ else_block? }
+if_block = { IfKeyword ~ expression ~ OpenCurly ~ (statement)* ~ CloseCurly }
+else_block = { ElseKeyword ~ OpenCurly ~ (statement*) ~ CloseCurly }
+while_stmt = { WhileKeyword ~ expression ~ OpenCurly ~ (statement)* ~ CloseCurly }
+variable_declaration = { VarKeyword ~ Ident ~ Colon ~ type_sig ~ Equals ~ expression }
+assignment = { Ident ~ Equals ~ expression }
 
-expression = { primary_expr }
-primary_expr = { (parenthesis_expr | call_expr | Ident | literal) }
-literal = { (number_literal | qubit_literal) }
+expression = _{ primary_expr }
+primary_expr = _{ (parenthesis_expr | call_expr | Ident | literal) }
+literal = _{ (number_literal | qubit_literal | bit_literal) }
 number_literal = @{ Number }
 qubit_literal = @{ Pound ~ Integer }
+bit_literal = @{ (TrueKeyword | FalseKeyword) }
 call_expr = { Ident ~ OpeningParenthesis ~ (expression ~ Comma?)* ~ ClosingParenthesis }
-parenthesis_expr = { OpeningParenthesis ~ expression ~ ClosingParenthesis }
+parenthesis_expr = _{ OpeningParenthesis ~ expression ~ ClosingParenthesis }
 
 // Terminals
 RightArrow = _{ "->" }
@@ -34,12 +46,19 @@ Colon = _{ ":" }
 Comma = _{ "," }
 Pound = _{ "#" }
 Semicolon = _{ ";" }
+Equals = _{ "=" }
 
 Def = _{ "def" }
 Extern = _{ "extern" }
+IfKeyword = _{ "if" }
+WhileKeyword = _{ "while" }
+ElseKeyword = _{ "else" }
 BitKeyword = _{ "bit" }
 NumberKeyword = _{ "number" }
 QubitKeyword = _{ "qubit" }
+VarKeyword = _{ "var" }
+TrueKeyword = { "true" }
+FalseKeyword = { "false" }
 
 Integer = @{ ASCII_DIGIT* }
 Number = @{ ((ASCII_DIGIT* ~ "." ~ ASCII_DIGIT*) | ASCII_DIGIT+) }

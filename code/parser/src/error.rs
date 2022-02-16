@@ -24,7 +24,15 @@ pub enum QKaledioscopeError {
         err_span: SourceSpan,
         #[related]
         causes: Vec<QKaledioscopeError>
-    }
+    },
+
+    #[error(transparent)]
+    #[diagnostic()]
+    ParseIntError(#[from] std::num::ParseIntError),
+
+    #[error(transparent)]
+    #[diagnostic()]
+    ParseFloatError(#[from] std::num::ParseFloatError)
 }
 pub type Result<T> = std::result::Result<T, QKaledioscopeError>;
 
