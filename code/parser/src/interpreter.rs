@@ -1,8 +1,9 @@
-use std::{collections::HashMap, cell::RefCell};
+use std::{collections::HashMap, cell::RefCell, path::PathBuf, fs};
 
+use pest::Parser;
 use qqs::{QuantumSim, sparsestate::SparseState, common_matrices};
 
-use crate::{ast::{Program, FileElement, Statement, Expression, Identifier, Located, Type}, error::{QKaledioscopeError, Result}};
+use crate::{ast::{Program, FileElement, Statement, Expression, Identifier, Located, Type}, error::{QKaledioscopeError, Result, rule_error_as_parse_error}, parser::{QKaledioscopeParser, Rule}, ast_builder::TryParse};
 
 #[derive(Debug, Clone, Copy)]
 pub enum InterpreterValue {
@@ -274,4 +275,31 @@ impl FunctionTableEntry<'_> {
             }
         }
     }
+}
+
+pub fn run(source_file: PathBuf) -> miette::Result<()> {
+    // TODO: Extract common functionality.
+    let fname = source_file.to_str().map(|s| s.to_string());
+    let source = fs::read_to_string(&source_file).map_err(|e| QKaledioscopeError::IOError {
+        cause: e,
+        subject: fname
+    })?;
+    let source = source.as_str();
+    let mut program = vec![];
+
+    let pairs = QKaledioscopeParser::parse(Rule::program, source)
+        .map_err(|e| rule_error_as_parse_error(source, e))?;
+    for pair in pairs {
+        // Ignore the end of the file, but try to parse everything else.
+        if !matches!(pair.as_rule(), Rule::EOI) {
+            // TODO: write util fn to try parse multiple.
+            let element = FileElement::try_parse(source, pair)?;
+            program.push(element);
+        }
+    }
+
+    let program = Program(program);
+    program.run(&source)?;
+
+    Ok(())
 }

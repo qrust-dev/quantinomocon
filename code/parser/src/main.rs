@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate pest_derive;
 
-use std::{fs, path::PathBuf};
+use std::{path::PathBuf};
 use clap::{self, StructOpt};
 
 // NB: The modules below are listed roughly in the order that's easiest to
@@ -16,31 +16,52 @@ pub mod interpreter;
 pub mod error;
 mod util;
 
-use crate::ast_builder::*;
-use crate::error::QKaledioscopeError;
-
-
-
 #[derive(clap::Parser, Debug)]
 struct Args {
-    source_file: PathBuf,
+    #[clap(subcommand)]
+    action: Action,
+}
+
+#[derive(clap::Subcommand, Debug)]
+pub enum Action {
+    /// Parses a Quantum Kalediscope program and prints the result.
+    Parse {
+        source_file: PathBuf,
+    },
+    /// Parses a Quantum Kalediscope program and prints an abstract syntax tree
+    /// for the program.
+    BuildAst {
+        source_file: PathBuf,
+    },
+    /// Interprets a Quantum Kalediscope program and runs it on a full-state
+    /// quantum simulator.
+    Interpret {
+        source_file: PathBuf,
+    }
 }
 
 fn main() -> miette::Result<()> {
     let args = Args::parse();
-    let fname = args.source_file.to_str().map(|s| s.to_string());
-    let source = fs::read_to_string(args.source_file).map_err(|e| QKaledioscopeError::IOError {
-        cause: e,
-        subject: fname
-    })?;
-    let ast = parse(&source)?;
+    match args.action {
+        Action::Parse { source_file } => parser::parse(source_file),
+        Action::BuildAst { source_file } => ast_builder::build(source_file),
+        Action::Interpret { source_file } => interpreter::run(source_file),
+    }
+
+
+    // let fname = args.source_file.to_str().map(|s| s.to_string());
+    // let source = fs::read_to_string(args.source_file).map_err(|e| QKaledioscopeError::IOError {
+    //     cause: e,
+    //     subject: fname
+    // })?;
+    // let ast = parse(&source)?;
 
     // println!("Parsed into AST: {:?}", ast);
 
     // let table = FunctionTable::build(&source, &ast)?;
     // println!("Built function table: {:?}", table);
 
-    ast.run(&source)?;
+    // ast.run(&source)?;
 
-    Ok(())
+    // Ok(())
 }

@@ -1,0 +1,40 @@
+/*
+Taken from the reference.
+Warnings and notes:
+Write the <div>s on their own line. E.g.
+<div class="warning">
+Warning: This is bad!
+</div>
+*/
+div.page .warning p {
+    padding: 10px 20px;
+    margin: 20px 0;
+}
+
+div.page .warning p::before {
+    content: "⚠️ ";
+}
+
+.light div.page .warning p,
+.rust div.page .warning p {
+    border: 2px solid red;
+    background: #ffcece;
+}
+
+.rust div.page .warning p {
+    /* overrides previous declaration */
+    border-color: #961717;
+}
+
+.coal div.page .warning p,
+.navy div.page .warning p,
+.ayu div.page .warning p {
+    background: #542626
+}
+
+/* Make the links higher contrast on dark themes */
+.coal div.page .warning p a,
+.navy div.page .warning p a,
+.ayu div.page .warning p a {
+    color: #80d0d0
+}

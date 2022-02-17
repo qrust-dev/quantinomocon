@@ -1,5 +1,5 @@
 use crate::ast::{
-    ArgumentDeclaration, Expression, FileElement, Identifier, Located, Program, Prototype,
+    ArgumentDeclaration, Expression, FileElement, Identifier, Located, Prototype,
     Statement, Type,
 };
 use crate::error::{
@@ -9,7 +9,8 @@ use crate::parser::{QKaledioscopeParser, Rule};
 use crate::util::ResultIter;
 use pest::iterators::Pair;
 use pest::{Parser, Span};
-use std::vec;
+use std::path::PathBuf;
+use std::{vec, fs};
 use std::{fmt::Debug, str::FromStr};
 
 pub(crate) trait TryParse
@@ -292,7 +293,13 @@ impl TryParse for Expression {
     }
 }
 
-pub fn parse(source: &str) -> Result<Program> {
+pub fn build(source_file: PathBuf) -> miette::Result<()> {
+    let fname = source_file.to_str().map(|s| s.to_string());
+    let source = fs::read_to_string(&source_file).map_err(|e| QKaledioscopeError::IOError {
+        cause: e,
+        subject: fname
+    })?;
+    let source = source.as_str();
     let mut program = vec![];
 
     let pairs = QKaledioscopeParser::parse(Rule::program, source)
@@ -305,5 +312,8 @@ pub fn parse(source: &str) -> Result<Program> {
             program.push(element);
         }
     }
-    Ok(Program(program))
+
+    println!("{}", serde_json::to_string(&program).map_err(|e| QKaledioscopeError::JsonError(e))?);
+
+    Ok(())
 }

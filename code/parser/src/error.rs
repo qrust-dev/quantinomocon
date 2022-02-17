@@ -97,7 +97,11 @@ pub enum QKaledioscopeError {
 
         #[label("Referenced from here.")]
         span: SourceSpan,
-    }
+    },
+
+    #[error(transparent)]
+    #[diagnostic()]
+    JsonError(#[from] serde_json::Error),
 }
 
 pub type Result<T> = std::result::Result<T, QKaledioscopeError>;
