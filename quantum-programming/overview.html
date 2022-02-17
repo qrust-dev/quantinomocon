@@ -14,29 +14,30 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
-                <link rel="icon" href="favicon.svg">
-                        <link rel="shortcut icon" href="favicon.png">
-                <link rel="stylesheet" href="css/variables.css">
-        <link rel="stylesheet" href="css/general.css">
-        <link rel="stylesheet" href="css/chrome.css">
-                <link rel="stylesheet" href="css/print.css" media="print">
+                <link rel="icon" href="../favicon.svg">
+                        <link rel="shortcut icon" href="../favicon.png">
+                <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+                <link rel="stylesheet" href="../css/print.css" media="print">
         
         <!-- Fonts -->
-        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-                <link rel="stylesheet" href="fonts/fonts.css">
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+                <link rel="stylesheet" href="../fonts/fonts.css">
         
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="highlight.css">
-        <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
+                <link rel="stylesheet" href="../theme/nomicon.css">
         
             </head>
     <body>
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
-            var path_to_root = "";
+            var path_to_root = "../";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
@@ -82,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="intro.html">Introduction</a></li><li class="chapter-item expanded affix "><div>Setting Up Your Dev Environment</div></li><li class="chapter-item expanded "><a href="quantum-programming.html" class="active"><strong aria-hidden="true">1.</strong> What is Quantum Programming</a></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">1.1.</strong> Circuits and Pseudocode</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">1.2.</strong> Programming and Metaprogramming</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.</strong> Quantum Kaledioscope: Your Own Quantum Language</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">2.1.</strong> Parsing with pest.rs</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.2.</strong> Interpreting ASTs</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.</strong> Simulating Quantum Kaledioscope</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">3.1.</strong> Working with Quantum Simulators</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Making Nicer Errors</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Using Quantum Kaledioscope from Other Languages</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">4.1.</strong> Interoperating with Python Using PyO3</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.2.</strong> Interoperating with Julia Using a C API</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Compiling Quantum Programs</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">6.</strong> Running on Hardware</div></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../intro.html">Introduction</a></li><li class="chapter-item expanded affix "><div>Setting Up Your Dev Environment</div></li><li class="chapter-item expanded "><a href="../quantum-programming/overview.html" class="active"><strong aria-hidden="true">1.</strong> What is Quantum Programming</a></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">1.1.</strong> Circuits and Pseudocode</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">1.2.</strong> Programming and Metaprogramming</div></li></ol></li><li class="chapter-item expanded "><a href="../qkaledioscope/overview.html"><strong aria-hidden="true">2.</strong> Quantum Kaledioscope: Your Own Quantum Language</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../qkaledioscope/parsing.html"><strong aria-hidden="true">2.1.</strong> Parsing with pest.rs</a></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.2.</strong> Making Nice Errors</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.3.</strong> Building an AST</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">2.4.</strong> Working with Quantum Simulators</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.</strong> Using Quantum Kaledioscope from Other Languages</div></li><li><ol class="section"><li class="chapter-item expanded "><div><strong aria-hidden="true">3.1.</strong> Interoperating with Python Using PyO3</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">3.2.</strong> Interoperating with Julia Using a C API</div></li></ol></li><li class="chapter-item expanded "><div><strong aria-hidden="true">4.</strong> Compiling Quantum Programs</div></li><li class="chapter-item expanded "><div><strong aria-hidden="true">5.</strong> Running on Hardware</div></li><li class="spacer"></li><li class="chapter-item expanded affix "><a href="../misc/contributors.html">Contributors</a></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -114,7 +115,7 @@
                     <h1 class="menu-title">The Quantinomocon</h1>
 
                     <div class="right-buttons">
-                                                <a href="print.html" title="Print this book" aria-label="Print this book">
+                                                <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
                                                                         
@@ -149,10 +150,13 @@
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                                                    <a rel="prev" href="intro.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                                    <a rel="prev" href="../intro.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
+                                                    <a rel="next" href="../qkaledioscope/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
                         
                         <div style="clear: both"></div>
                     </nav>
@@ -160,10 +164,13 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                                    <a rel="prev" href="intro.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                    <a rel="prev" href="../intro.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
+                                    <a rel="next" href="../qkaledioscope/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
                             </nav>
 
         </div>
@@ -176,13 +183,13 @@
         </script>
         
         
-                <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+                <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
         
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
         
