@@ -1,8 +1,21 @@
 extern h(q : qubit);
 extern m(q : qubit) -> bit;
 extern print_b(b : bit);
+extern pi() -> number;
+
+def foo() {
+    var b: bit = true;
+    var n: number = 3.14;
+    var q: qubit = #3;
+    var c: qubit = q;
+}
 
 def qmain() {
     h(#0);
     print_b(m(#0));
+}
+
+def print_b_twice(b : bit, q: qubit, n: number) {
+    print_b(b);
+    print_b(b);
 }

@@ -1,0 +1,8 @@
+# TODO: Document using this to get LLVM tooling.
+# $Env:LLVM_SYS_130_PREFIX = "$Env:CONDA_PREFIX/Library" (windows)
+name: quantinomicon
+channels:
+  - conda-forge
+dependencies:
+  - llvm-tools==13
+  - llvmdev==13

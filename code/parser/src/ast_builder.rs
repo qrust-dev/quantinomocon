@@ -1,6 +1,6 @@
 use crate::ast::{
     ArgumentDeclaration, Expression, FileElement, Identifier, Located, Prototype,
-    Statement, Type,
+    Statement, Type, Program,
 };
 use crate::error::{
     rule_error_as_parse_error, wrong_rule_as_parse_error, QKaledioscopeError, Result,
@@ -293,7 +293,10 @@ impl TryParse for Expression {
     }
 }
 
-pub fn build(source_file: PathBuf) -> miette::Result<()> {
+pub fn build_ast(source_file: PathBuf) -> Result<Program> {
+    // TODO: Refactor to use parse(). Can't do that quite yet since we still
+    //       need source as &str to reference the original program source code
+    //       for reporting as errors.
     let fname = source_file.to_str().map(|s| s.to_string());
     let source = fs::read_to_string(&source_file).map_err(|e| QKaledioscopeError::IOError {
         cause: e,
@@ -313,6 +316,12 @@ pub fn build(source_file: PathBuf) -> miette::Result<()> {
         }
     }
 
+    Ok(Program(program))
+}
+
+
+pub fn run_build_cmd(source_file: PathBuf) -> miette::Result<()> {
+    let program = build_ast(source_file)?;
     println!("{}", serde_json::to_string(&program).map_err(|e| QKaledioscopeError::JsonError(e))?);
 
     Ok(())

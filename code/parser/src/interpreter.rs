@@ -277,7 +277,7 @@ impl FunctionTableEntry<'_> {
     }
 }
 
-pub fn run(source_file: PathBuf) -> miette::Result<()> {
+pub fn run_interpret_cmd(source_file: PathBuf) -> miette::Result<()> {
     // TODO: Extract common functionality.
     let fname = source_file.to_str().map(|s| s.to_string());
     let source = fs::read_to_string(&source_file).map_err(|e| QKaledioscopeError::IOError {
