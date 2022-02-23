@@ -160,9 +160,10 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
                 let alloca = self.variables.get(&ident.0).unwrap();
                 self.builder.build_load(*alloca, "")
             },
-            // TODO: Don't unwrap here either.
             Expression::Call(ident, arg_exprs) => {
-                self.compile_call(ident, arg_exprs).left().unwrap()
+                let call = self.compile_call(ident, arg_exprs);
+                // TODO: Don't unwrap here either, but turn into an actual error.
+                call.left().unwrap_or_else(|| panic!("Function called as an expression, but does not have a return value.\n\tDebug info: {call:?}."))
             }
         }
     }
@@ -174,16 +175,54 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
             match &stmt.value {
                 Statement::VariableDeclaration(ident, ty, rhs) => {
                     let alloca = self.create_entry_block_alloca(&ident.value.0, &ty.value);
-                    match ty.value {
-                        Type::Bit => self.builder.build_store(alloca, self.compile_expr(&rhs.value)),
-                        Type::Number => self.builder.build_store(alloca, self.compile_expr(&rhs.value)),
-                        Type::Qubit => self.builder.build_store(alloca, self.compile_expr(&rhs.value)),
-                    };
+                    self.builder.build_store(alloca, self.compile_expr(&rhs.value));
                     self.variables.insert(ident.value.0.to_string(), alloca);
+                },
+                Statement::Assignment(ident, rhs) => {
+                    // TODO: Don't unwrap here.
+                    let alloca = self.variables.get(&ident.value.0.to_string()).unwrap();
+                    self.builder.build_store(*alloca, self.compile_expr(&rhs.value));
                 },
                 Statement::Call(ident, args) => {
                     // TODO: Don't ignore errors here.
                     self.compile_call(ident, args);
+                },
+                Statement::Return(expr) => {
+                    let value = self.compile_expr(&expr.value);
+                    self.builder.build_return(Some(&value));
+                },
+                Statement::If { condition, true_body, false_body} => {
+                    let parent = self.fn_value();
+                    let then_bb = self.context.append_basic_block(parent, "then");
+                    let else_bb = self.context.append_basic_block(parent, "else");
+                    let cont_bb = self.context.append_basic_block(parent, "ifcont");
+                    let cond = self.compile_expr(&condition.value);
+                    let cond = match cond {
+                        BasicValueEnum::IntValue(cond) => cond,
+                        // TODO: Don't unwrap here.
+                        _ => panic!("Expected a boolean condition, but got {cond:?}")
+                    };
+
+                    self.builder.build_conditional_branch(cond, then_bb, else_bb);
+
+                    // Build then block.
+                    self.builder.position_at_end(then_bb);
+                    self.compile_body(true_body);
+                    self.builder.build_unconditional_branch(cont_bb);
+                    let then_bb = self.builder.get_insert_block().unwrap();
+
+                    // Built the else block.
+                    self.builder.position_at_end(else_bb);
+                    self.compile_body(false_body);
+                    self.builder.build_unconditional_branch(cont_bb);
+                    let else_bb = self.builder.get_insert_block().unwrap();
+
+                    // NB: We don't have to worry about phi nodes here, since we
+                    //     used pointer logic instead — that's less efficient, such that
+                    //     in practice, you'll likely want to use phi nodes and
+                    //     reason about values on the stack instead when doing
+                    //     anything more practical.
+                    self.builder.position_at_end(cont_bb);
                 },
                 _ => todo!("not yet implemented: {stmt:?}")
             }

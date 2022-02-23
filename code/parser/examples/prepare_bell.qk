@@ -10,14 +10,12 @@ extern print_q(q : qubit);
 def do_weird_stuff() {
     var foo: bit = true;
     var result: bit = m(#2);
+    var y: number = 3.14;
     if result {
         foo = false;
     } else {
-        while false {
-            var z: number = 1.712;
-        }
+        var z: number = 1.712;
     }
-    var y: number = 3.14;
     y = 2.17;
 }
 
@@ -30,7 +28,7 @@ def qmain() {
     print_b(m(#1));
 }
 
-def f(x: number) {
+def f(x: number) -> number {
     print_n(x);
     h(#0);
     print_b(m(#0));
