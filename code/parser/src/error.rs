@@ -99,6 +99,33 @@ pub enum QKaledioscopeError {
         span: SourceSpan,
     },
 
+    #[error("No function {name} has been defined.")]
+    #[diagnostic()]
+    UndefinedFunctionError {
+        name: String,
+
+        #[source_code]
+        src: String,
+
+        #[label("Called from here.")]
+        span: SourceSpan,
+    },
+
+    #[error("Called function {name} as an expression, but {name} was declared without a return value.")]
+    #[diagnostic()]
+    VoidCallError {
+        name: String,
+
+        #[source_code]
+        src: String,
+
+        #[label("Called from here...")]
+        call_span: SourceSpan,
+
+        #[label("...but no return type was defined here.")]
+        decl_span: SourceSpan,
+    },
+
     #[error(transparent)]
     #[diagnostic()]
     JsonError(#[from] serde_json::Error),

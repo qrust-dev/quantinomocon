@@ -22,6 +22,12 @@ impl<T> Located<T> where T: std::fmt::Debug {
         (loc.0, loc.1 - loc.0).into()
     }
 }
+impl<T> Clone for Located<T> where T: std::fmt::Debug + Clone {
+    fn clone(&self) -> Self {
+        Self { value: self.value.clone(), location: self.location.clone() }
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct Program(pub Vec<Located<FileElement>>);
 
@@ -35,17 +41,17 @@ pub enum FileElement {
     },
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Prototype {
     pub name: Located<Identifier>,
     pub arguments: Vec<Located<ArgumentDeclaration>>,
     pub return_type: Option<Located<Type>>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct ArgumentDeclaration(pub Located<Identifier>, pub Located<Type>);
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone, Copy)]
 pub enum Type {
     Number,
     Qubit,

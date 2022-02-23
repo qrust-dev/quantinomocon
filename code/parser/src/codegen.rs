@@ -4,7 +4,7 @@ use either::Either;
 use inkwell::{context::Context, builder::Builder, passes::PassManager, values::{FunctionValue, PointerValue, BasicValue, IntValue, FloatValue, StructValue, BasicMetadataValueEnum, BasicValueEnum, InstructionOpcode, InstructionValue}, module::Module, types::{StructType, BasicTypeEnum, FunctionType, FloatType, VoidType, IntType, BasicMetadataTypeEnum, BasicType, PointerType}, basic_block::BasicBlock};
 use miette::IntoDiagnostic;
 
-use crate::{ast::{FileElement, Program, Prototype, Located, Type, ArgumentDeclaration, Statement, Expression, Identifier}, error::Result, ast_builder::build_ast};
+use crate::{ast::{FileElement, Program, Prototype, Located, Type, ArgumentDeclaration, Statement, Expression, Identifier}, error::{Result, QKaledioscopeError}, ast_builder::build_ast};
 
 // NB: We largely follow the inkwell::kaledioscope tutorial at
 //     https://github.com/TheDan64/inkwell/blob/master/examples/kaleidoscope/main.rs
@@ -45,7 +45,9 @@ pub struct Compiler<'a, 'ctx> {
     pub fpm: &'a PassManager<FunctionValue<'ctx>>,
     pub module: &'a Module<'ctx>,
     pub program: &'a Program,
+    pub source: &'a str,
 
+    prototypes: HashMap<String, Located<Prototype>>,
     variables: HashMap<String, PointerValue<'ctx>>,
     fn_value_opt: Option<FunctionValue<'ctx>>
 }
@@ -98,7 +100,17 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
 
     // TODO: Change Result to crate::error::Result by adding appropriate
     //       cases to QKaledioscopeError.
-    fn compile_prototype(&self, proto: &Prototype) -> std::result::Result<FunctionValue<'ctx>, &'static str> {
+    fn compile_prototype(&mut self, proto: &Located<Prototype>) -> Result<FunctionValue<'ctx>> {
+        // Start by registering the prototype in our map for later error
+        // handling.
+        self.prototypes.insert(proto.value.name.value.0.to_string(), Located::<Prototype> {
+            value: proto.value.clone(),
+            location: proto.location,
+        });
+
+        let proto = &proto.value;
+
+        // Proceed to build the LLVM definition.
         let ret_type: Box<dyn ReturnType> = match &proto.return_type {
             None => Box::new(self.context.void_type()),
             Some(Located { value, location }) => match value {
@@ -134,18 +146,23 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
         Ok(fn_val)
     }
 
-    fn compile_call(&mut self, ident: &Located<Identifier>, arg_exprs: &[Located<Expression>]) -> Either<BasicValueEnum<'ctx>, InstructionValue<'ctx>> {
-        // TODO: Don't unwrap here, but return nicer error when fn is missing.
-        let callee = self.get_function(&ident.value.0).unwrap();
+    fn compile_call(&mut self, ident: &Located<Identifier>, arg_exprs: &[Located<Expression>]) -> Result<Either<BasicValueEnum<'ctx>, InstructionValue<'ctx>>> {
+        let callee = self.get_function(&ident.value.0).ok_or(QKaledioscopeError::UndefinedFunctionError {
+            name: ident.value.0.to_string(),
+            src: self.source.to_string(),
+            span: ident.as_sourcespan()
+        })?;
         let args = arg_exprs.iter()
-            .map(|e| self.compile_expr(&e.value).into())
-            .collect::<Vec<BasicMetadataValueEnum>>();
-        self.builder.build_call(callee, args.as_slice(), "tmp").try_as_basic_value()
+            .map(|e|
+                self.compile_expr(&e)
+                    .map(|ok| ok.into())
+            )
+            .collect::<Result<Vec<BasicMetadataValueEnum>>>()?;
+        Ok(self.builder.build_call(callee, args.as_slice(), "tmp").try_as_basic_value())
     }
 
-    // TODO: Make a result instead of unwrapping
-    fn compile_expr(&mut self, expr: &Expression) -> BasicValueEnum<'ctx> {
-        match expr {
+    fn compile_expr(&mut self, expr: &Located<Expression>) -> Result<BasicValueEnum<'ctx>> {
+        Ok(match &expr.value {
             Expression::BitLiteral(b) => self.context.bool_type().const_int(if *b { 1 } else { 0 }, false).into(),
             Expression::NumberLiteral(n) => self.context.f64_type().const_float(*n).into(),
             Expression::QubitLiteral(q) =>
@@ -156,39 +173,54 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
                     "" // TODO: Not clear from inkwel or llvm docs what this argument does.
                 ),
             Expression::Identifier(ident) => {
-                // TODO: Don't unwrap here, but return nicer error when variable is missing.
-                let alloca = self.variables.get(&ident.0).unwrap();
+                let alloca = self.variables.get(&ident.0).ok_or(QKaledioscopeError::UndefinedVariableError {
+                    name: ident.0.clone(),
+                    src: self.source.to_string(),
+                    span: expr.as_sourcespan()
+                })?;
                 self.builder.build_load(*alloca, "")
             },
             Expression::Call(ident, arg_exprs) => {
-                let call = self.compile_call(ident, arg_exprs);
+                let call = self.compile_call(&ident, arg_exprs);
+                let call_dbg = format!("{call:?}");
                 // TODO: Don't unwrap here either, but turn into an actual error.
-                call.left().unwrap_or_else(|| panic!("Function called as an expression, but does not have a return value.\n\tDebug info: {call:?}."))
+                call?
+                    .left()
+                    .ok_or_else(|| {
+                        // Unwrap should be ok here since the call lookup
+                        // already succeeded.
+                        let prototype = self.prototypes.get(&ident.value.0.to_string()).unwrap();
+                        QKaledioscopeError::VoidCallError {
+                            name: ident.value.0.clone(),
+                            src: self.source.to_string(),
+                            call_span: expr.as_sourcespan(),
+                            decl_span: prototype.as_sourcespan(),
+                        }
+                    })?
             }
-        }
+        })
     }
 
     // NB: Implicitly references fn_value_opt and variables for local
     //     symbol table.
-    fn compile_body(&mut self, body: &Vec<Located<Statement>>) {
+    fn compile_body(&mut self, body: &Vec<Located<Statement>>) -> Result<()> {
         for stmt in body.iter() {
             match &stmt.value {
                 Statement::VariableDeclaration(ident, ty, rhs) => {
                     let alloca = self.create_entry_block_alloca(&ident.value.0, &ty.value);
-                    self.builder.build_store(alloca, self.compile_expr(&rhs.value));
+                    self.builder.build_store(alloca, self.compile_expr(&rhs)?);
                     self.variables.insert(ident.value.0.to_string(), alloca);
                 },
                 Statement::Assignment(ident, rhs) => {
                     // TODO: Don't unwrap here.
                     let alloca = self.variables.get(&ident.value.0.to_string()).unwrap();
-                    self.builder.build_store(*alloca, self.compile_expr(&rhs.value));
+                    self.builder.build_store(*alloca, self.compile_expr(&rhs)?);
                 },
                 Statement::Call(ident, args) => {
-                    // TODO: Don't ignore errors here.
-                    self.compile_call(ident, args);
+                    self.compile_call(ident, args)?;
                 },
                 Statement::Return(expr) => {
-                    let value = self.compile_expr(&expr.value);
+                    let value = self.compile_expr(&expr)?;
                     self.builder.build_return(Some(&value));
                 },
                 Statement::If { condition, true_body, false_body} => {
@@ -196,7 +228,7 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
                     let then_bb = self.context.append_basic_block(parent, "then");
                     let else_bb = self.context.append_basic_block(parent, "else");
                     let cont_bb = self.context.append_basic_block(parent, "ifcont");
-                    let cond = self.compile_expr(&condition.value);
+                    let cond = self.compile_expr(&condition)?;
                     let cond = match cond {
                         BasicValueEnum::IntValue(cond) => cond,
                         // TODO: Don't unwrap here.
@@ -207,13 +239,13 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
 
                     // Build then block.
                     self.builder.position_at_end(then_bb);
-                    self.compile_body(true_body);
+                    self.compile_body(true_body)?;
                     self.builder.build_unconditional_branch(cont_bb);
                     let then_bb = self.builder.get_insert_block().unwrap();
 
                     // Built the else block.
                     self.builder.position_at_end(else_bb);
-                    self.compile_body(false_body);
+                    self.compile_body(false_body)?;
                     self.builder.build_unconditional_branch(cont_bb);
                     let else_bb = self.builder.get_insert_block().unwrap();
 
@@ -227,18 +259,21 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
                 _ => todo!("not yet implemented: {stmt:?}")
             }
         }
+
+        Ok(())
     }
 
-    pub fn compile(&mut self) {
+    pub fn compile(&mut self) -> Result<()> {
         // We start by making prototypes for each file element in the source.
         // This allows us to make sure we can always emit call instructions
         // later on in the compilation process, as the function declaration
         // will always exist.
         for file_element in &self.program.0 {
-            let compiled_proto = self.compile_prototype(&match &file_element.value {
+            let proto = match &file_element.value {
                 FileElement::Declaration(proto) => proto,
                 FileElement::Definition { body, prototype } => prototype
-            }.value).unwrap(); // TODO: don't unwrap!
+            };
+            let compiled_proto = self.compile_prototype(proto).unwrap(); // TODO: don't unwrap!
         }
 
         // Once we've made an initial pass to build prototypes, we can run a
@@ -270,19 +305,19 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
 
                     // Now that we've loaded arguments, we can compile the
                     // body itself.
-                    self.compile_body(&body);
-
-                    // TODO: Build return.
+                    self.compile_body(&body)?;
                 }
             }
         }
+
+        Ok(())
     }
 }
 
 pub fn compile(source_file: PathBuf) -> Result<()> {
     // TODO: Need some way of getting source as String here so that we can
     //       attach error messages.
-    let program = build_ast(source_file)?;
+    let (program, source) = build_ast(source_file)?;
 
     let context = Context::create();
     let module = context.create_module("qk");
@@ -306,11 +341,13 @@ pub fn compile(source_file: PathBuf) -> Result<()> {
         fpm: &fpm,
         module: &module,
         program: &program,
+        source: &source,
         fn_value_opt: None,
-        variables: HashMap::new()
+        variables: HashMap::new(),
+        prototypes: HashMap::new(),
     };
 
-    compiler.compile();
+    compiler.compile()?;
     let ir = module.print_to_string().to_string();
     println!("Compiled IR:\n{ir}");
 

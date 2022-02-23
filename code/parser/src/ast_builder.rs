@@ -293,7 +293,7 @@ impl TryParse for Expression {
     }
 }
 
-pub fn build_ast(source_file: PathBuf) -> Result<Program> {
+pub fn build_ast(source_file: PathBuf) -> Result<(Program, String)> {
     // TODO: Refactor to use parse(). Can't do that quite yet since we still
     //       need source as &str to reference the original program source code
     //       for reporting as errors.
@@ -302,21 +302,21 @@ pub fn build_ast(source_file: PathBuf) -> Result<Program> {
         cause: e,
         subject: fname
     })?;
-    let source = source.as_str();
+    let source_str = source.as_str();
     let mut program = vec![];
 
-    let pairs = QKaledioscopeParser::parse(Rule::program, source)
-        .map_err(|e| rule_error_as_parse_error(source, e))?;
+    let pairs = QKaledioscopeParser::parse(Rule::program, source_str)
+        .map_err(|e| rule_error_as_parse_error(source_str, e))?;
     for pair in pairs {
         // Ignore the end of the file, but try to parse everything else.
         if !matches!(pair.as_rule(), Rule::EOI) {
             // TODO: write util fn to try parse multiple.
-            let element = FileElement::try_parse(source, pair)?;
+            let element = FileElement::try_parse(source_str, pair)?;
             program.push(element);
         }
     }
 
-    Ok(Program(program))
+    Ok((Program(program), source))
 }
 
 
