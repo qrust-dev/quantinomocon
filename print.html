@@ -202,26 +202,14 @@ pub struct QKaledioscopeParser;
 <li>We need a way to represent flow control on classical data.</li>
 </ul>
 <p>In Quantum Kaledioscope, we'll provide these elements by modeling a quantum program as a sequence of one or more <em>functions</em>, each of which can call quantum gates defined as prototypes. For example, we might write a simple QRNG program in QK as:</p>
-<pre><code class="language-text">extern h(q : qubit);
+<pre><code class="language-text">#!/usr/bin/env cargo run -- interpret
+extern h(q : qubit);
 extern m(q : qubit) -&gt; bit;
 extern print_b(b : bit);
-extern pi() -&gt; number;
-
-def foo() {
-    var b: bit = true;
-    var n: number = 3.14;
-    var q: qubit = #3;
-    var c: qubit = q;
-}
 
 def qmain() {
-    h(#0);
-    print_b(m(#0));
-}
-
-def print_b_twice(b : bit, q: qubit, n: number) {
-    print_b(b);
-    print_b(b);
+    h(%0);
+    print_b(m(%0));
 }
 </code></pre>
 <p>Above, we've defined each gate that we have access to with an <code>extern</code> declaration, and have defined one function <code>qmain</code> by using the <code>def</code> keyword. That <code>qmain</code> function then refers to particular qubits (e.g.: <code>#0</code>) made available by our device, and passes those qubits to the various gates exposed by our simulator or device.</p>
