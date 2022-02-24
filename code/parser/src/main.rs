@@ -13,9 +13,9 @@ pub mod parser;
 pub mod ast;
 pub mod ast_builder;
 pub mod interpreter;
-pub mod error;
 pub mod codegen;
 
+pub mod error;
 mod util;
 
 #[derive(clap::Parser, Debug)]
@@ -55,21 +55,4 @@ fn main() -> miette::Result<()> {
         Action::Interpret { source_file } => interpreter::run_interpret_cmd(source_file),
         Action::Compile { source_file } => codegen::run_compile_cmd(source_file),
     }
-
-
-    // let fname = args.source_file.to_str().map(|s| s.to_string());
-    // let source = fs::read_to_string(args.source_file).map_err(|e| QKaledioscopeError::IOError {
-    //     cause: e,
-    //     subject: fname
-    // })?;
-    // let ast = parse(&source)?;
-
-    // println!("Parsed into AST: {:?}", ast);
-
-    // let table = FunctionTable::build(&source, &ast)?;
-    // println!("Built function table: {:?}", table);
-
-    // ast.run(&source)?;
-
-    // Ok(())
 }

@@ -1,0 +1,59 @@
+extern h(q : qubit);
+extern cnot(c : qubit, t : qubit);
+extern rz(θ : number, q : qubit);
+extern m(q : qubit) -> bit;
+
+extern print_n(n : number);
+extern print_b(b : bit);
+extern print_q(q : qubit);
+
+// Do some weird stuff, I guess.
+def do_weird_stuff() {
+    var foo: bit = true;
+    var result: bit = m(#2);
+    var y: number = 3.14;
+    if result {
+        foo = false;
+    } else {
+        var z: number = 1.712;
+    }
+    y = 2.17;
+}
+
+def qmain() {
+    var c: qubit = #0;
+    var t: qubit = #1;
+    h(c);
+    cnot(c, t);
+    print_b(m(#0));
+    print_b(m(#1));
+}
+
+def f(x: number) -> number {
+    print_n(x);
+    h(#0);
+    print_b(m(#0));
+    return x;
+}
+
+def qmain_disabled() {
+    var x: number = 3.14;
+    var y: bit = false;
+    var z: number = f(x);
+}
+def foo() {
+    var b: bit = true;
+    var n: number = 3.14;
+    var q: qubit = #3;
+    var c: qubit = q;
+}
+
+def qmain() {
+    h(#0);
+    print_b(m(#0));
+}
+
+def print_b_twice(b : bit, q: qubit, n: number) {
+    print_b(b);
+    print_b(b);
+}

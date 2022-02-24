@@ -1,9 +1,13 @@
-#!/usr/bin/env cargo run -- interpret
+#!/usr/bin/env cargo run -- compile
 extern h(q : qubit);
+extern x(q : qubit);
 extern m(q : qubit) -> bit;
 extern print_b(b : bit);
 
 def qmain() {
     h(%0);
+    if m(%0) {
+        x(%0);
+    }
     print_b(m(%0));
 }

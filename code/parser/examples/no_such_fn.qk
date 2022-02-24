@@ -5,5 +5,5 @@ extern print_b(b : bit);
 
 def qmain() {
     h(%0);
-    print_b(m(%0));
+    print(m(%0));
 }

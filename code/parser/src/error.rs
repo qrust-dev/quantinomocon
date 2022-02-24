@@ -2,7 +2,6 @@ use miette::{Diagnostic, SourceSpan, SourceCode, SourceOffset};
 use pest::{error::LineColLocation, Span};
 use thiserror::Error;
 
-
 #[derive(Debug, Diagnostic, Error)]
 pub enum QKaledioscopeError {
     #[error("I/O error reading {subject:?}: {cause}")]
@@ -13,7 +12,6 @@ pub enum QKaledioscopeError {
         cause: std::io::Error,
         subject: Option<String>
     },
-
 
     #[error(transparent)]
     #[diagnostic()]

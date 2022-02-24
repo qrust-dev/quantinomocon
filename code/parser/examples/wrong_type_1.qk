@@ -1,17 +1,14 @@
 #!/usr/bin/env cargo run -- interpret
-
-# Declare what QIS gates we want.
 extern h(q : qubit);
 extern cnot(c : qubit, t : qubit);
 extern m(q : qubit) -> bit;
-
-# Declare print functions.
 extern print_b(b : bit);
 extern print_q(q : qubit);
 
 def qmain() {
-    var c: qubit = %0;
-    var t: qubit = %1;
+    var c: qubit = 0;
+    # Oops!
+    var t: qubit = 1;
     h(c);
     cnot(c, t);
     print_b(m(c));

@@ -1,0 +1,7 @@
+#!/usr/bin/env cargo run -- interpret
+
+def foo() {}
+def bar() {}
+def foo() {}
+
+def qmain() {}

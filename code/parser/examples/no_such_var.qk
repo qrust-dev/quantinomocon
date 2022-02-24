@@ -4,6 +4,8 @@ extern m(q : qubit) -> bit;
 extern print_b(b : bit);
 
 def qmain() {
-    h(%0);
-    print_b(m(%0));
+    var x: qubit = %0;
+    h(x);
+    # Oops!
+    print_b(m(y));
 }

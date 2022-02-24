@@ -1,8 +1,8 @@
-use std::{path::PathBuf, fs};
+use std::{fs, path::PathBuf};
 
-use pest::{Parser, iterators::Pairs};
+use pest::{iterators::Pairs, Parser};
 
-use crate::error::{QKaledioscopeError, rule_error_as_parse_error, Result};
+use crate::error::{rule_error_as_parse_error, QKaledioscopeError, Result};
 
 #[derive(Parser, Debug)]
 #[grammar = "qkaledioscope.pest"]
@@ -14,11 +14,11 @@ pub fn parse<'a>(source: &'a str) -> Result<Pairs<'a, Rule>> {
     Ok(pairs)
 }
 
-pub fn run_parse_cmd(source_file: PathBuf)  -> miette::Result<()> {
+pub fn run_parse_cmd(source_file: PathBuf) -> miette::Result<()> {
     let fname = source_file.to_str().map(|s| s.to_string());
     let source = fs::read_to_string(&source_file).map_err(|e| QKaledioscopeError::IOError {
         cause: e,
-        subject: fname
+        subject: fname,
     })?;
 
     let pairs = parse(source.as_str())?;

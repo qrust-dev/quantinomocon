@@ -255,9 +255,12 @@ impl FunctionTableEntry<'_> {
                                 return Ok(Some(value));
                             },
                             Statement::Call(ident, args) => {
-                                // TODO: Deduplicate with Expression::Call case.      
-                                // TODO: raise nice error instead of unwrapping.
-                                let function = table.fns.get(&ident.value).unwrap();
+                                // TODO: Deduplicate with Expression::Call case.
+                                let function = table.fns.get(&ident.value).ok_or_else(|| QKaledioscopeError::UndefinedFunctionError {
+                                    name: ident.value.0.to_string(),
+                                    span: ident.as_sourcespan(),
+                                    src: source.to_string(),
+                                })?;
                                 // We don't use map here so that we can more easily break out on first error...
                                 // it doesn't make sense to continue interpreting past a crash.
                                 let mut arg_values = vec![];
@@ -267,7 +270,7 @@ impl FunctionTableEntry<'_> {
                                 // TODO: Check if the return is some, raise an error.
                                 function.run_in(source, table, arg_values)?;
                             },
-                            _ => todo!()
+                            _ => todo!("Statement kind {:?} not yet supported for interpreted execution.", statement.value)
                         }
                     }
                     Ok(None)

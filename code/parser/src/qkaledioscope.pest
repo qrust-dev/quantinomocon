@@ -32,7 +32,7 @@ expression = _{ primary_expr }
 primary_expr = _{ (parenthesis_expr | call_expr | literal | Ident ) }
 literal = _{ (number_literal | qubit_literal | bit_literal) }
 number_literal = @{ Number }
-qubit_literal = @{ Pound ~ Integer }
+qubit_literal = @{ Percent ~ Integer }
 bit_literal = _{ (TrueKeyword | FalseKeyword) }
 call_expr = { Ident ~ OpeningParenthesis ~ (expression ~ Comma?)* ~ ClosingParenthesis }
 parenthesis_expr = _{ OpeningParenthesis ~ expression ~ ClosingParenthesis }
@@ -46,6 +46,7 @@ CloseCurly = _{ "}" }
 Colon = _{ ":" }
 Comma = _{ "," }
 Pound = _{ "#" }
+Percent = _{ "%" }
 Semicolon = _{ ";" }
 Equals = _{ "=" }
 
@@ -67,4 +68,4 @@ Number = @{ ((ASCII_DIGIT* ~ "." ~ ASCII_DIGIT*) | ASCII_DIGIT+) }
 Ident = @{ XID_START ~ XID_CONTINUE* }
 
 WHITESPACE = _{ WHITE_SPACE }
-
+COMMENT = _{ Pound ~ (!"\n" ~ ANY)* }
